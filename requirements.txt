@@ -1,0 +1,16 @@
+# Core ML
+torch>=2.0.0
+transformers>=4.30.0
+pillow>=9.0.0
+
+# Computer vision
+opencv-python>=4.8.0
+
+# Backend
+fastapi>=0.100.0
+uvicorn>=0.23.0
+python-multipart>=0.0.6
+
+# Utilities
+python-dotenv>=1.0.0
+
