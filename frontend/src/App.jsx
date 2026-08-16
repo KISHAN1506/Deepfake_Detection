@@ -38,6 +38,9 @@ function App() {
       }
 
       const data = await response.json();
+      if (data.success === false) {
+        throw new Error(data.error || 'Analysis failed');
+      }
       setResult(data);
     } catch (err) {
       setError(err.message);
