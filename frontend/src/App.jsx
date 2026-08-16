@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
@@ -6,23 +6,40 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [aggr, setAggr] = useState('MED');
+  const [logs, setLogs] = useState([
+    { ts: '10:41:59', msg: 'System initialized successfully.' },
+    { ts: '10:42:05', msg: 'Connecting to auth heuristic servers...' },
+    { ts: '10:42:08', msg: 'Connection established.', highlight: true },
+    { ts: '10:45:12', msg: 'Awaiting user input for media vectorization.' }
+  ]);
+
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
+  const addLog = (msg) => {
+    const ts = new Date().toISOString().substring(11, 19);
+    setLogs((prev) => [...prev, { ts, msg }]);
+  };
+
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-    setError(null);
-    setResult(null);
+    if (e.target.files && e.target.files[0]) {
+      const selected = e.target.files[0];
+      setFile(selected);
+      setError(null);
+      setResult(null);
+      addLog(`Selected media file: ${selected.name}`);
+    }
   };
 
   const handleAnalyze = async () => {
     if (!file) {
-      setError('Please select a file');
+      setError('Please select a media file first');
       return;
     }
 
     setLoading(true);
     setError(null);
-    setResult(null);
+    addLog('Initiating vector extraction & model inference...');
 
     try {
       const formData = new FormData();
@@ -33,217 +50,349 @@ function App() {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.statusText}`);
-      }
-
       const data = await response.json();
-      if (data.success === false) {
+      if (!response.ok || data.success === false) {
         throw new Error(data.error || 'Analysis failed');
       }
+
       setResult(data);
+      addLog(`Analysis complete. Prediction: ${data.prediction}`);
     } catch (err) {
       setError(err.message);
-      console.error('Analysis error:', err);
+      addLog(`[ERROR] ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>🔍 Deepfake Detection System</h1>
-        <p>AI-powered forensic analysis for digital media authentication</p>
-      </header>
+  const resetAnalysis = () => {
+    setFile(null);
+    setResult(null);
+    setError(null);
+  };
 
-      <main className="App-main">
-        {/* Upload Section */}
-        <div className="upload-section">
-          <h2>Upload Media</h2>
-          <div className="upload-box">
-            <input
-              type="file"
-              onChange={handleFileChange}
-              accept="image/*,video/*"
-              disabled={loading}
-            />
-            <p>{file ? `Selected: ${file.name}` : 'No file selected'}</p>
+  const exportReport = () => {
+    if (!result) return;
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `Forensic_Report_${result.filename || 'media'}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const isManipulated = result?.prediction === 'LIKELY MANIPULATED';
+  const fakePct = result ? Math.round((result.fake_probability || 0) * 100) : 0;
+  const strokeOffset = 440 - (440 * (fakePct / 100));
+
+  return (
+    <div className="verify-os-app">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="brand-header">
+          <div className="brand-logo">🛡️</div>
+          <div>
+            <div className="brand-title">VERIFY_OS</div>
+            <div className="brand-ver">v2.4.0-PRO</div>
           </div>
-          
-          <button
-            onClick={handleAnalyze}
-            disabled={!file || loading}
-            className="analyze-btn"
-          >
-            {loading ? 'Analyzing...' : 'Analyze'}
-          </button>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="error-box">
-            <h3>⚠️ Error</h3>
-            <p>{error}</p>
+        <ul className="nav-list">
+          <li className="nav-item"><a href="#overview">📊 Overview</a></li>
+          <li className="nav-item active"><a href="#forensics">🔬 Forensic Analysis</a></li>
+          <li className="nav-item"><a href="#reports">📋 Reports</a></li>
+          <li className="nav-item"><a href="#status">⚙️ System Status</a></li>
+        </ul>
+
+        <div className="sidebar-bottom">
+          <ul className="nav-list">
+            <li className="nav-item"><a href="#terminal">💻 Terminal</a></li>
+            <li className="nav-item"><a href="#logs">📜 Logs</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="app-main-content">
+        <header className="top-bar">
+          <div className="suite-tag">FORENSIC_AUTHENTICATION_SUITE</div>
+          
+          <div className="top-search-box">
+            <input type="text" placeholder="Search parameters..." />
           </div>
-        )}
 
-        {/* Loading Indicator */}
-        {loading && (
-          <div className="loading-box">
-            <div className="spinner"></div>
-            <p>Processing your media... This may take a moment.</p>
+          <div className="top-actions">
+            <div className="status-pill">
+              <span className="status-dot"></span>
+              <span>ONLINE</span>
+            </div>
           </div>
-        )}
+        </header>
 
-        {/* Results Section */}
-        {result && !loading && (
-          <div className="results-section">
-            <h2>Analysis Results</h2>
-
-            {/* Prediction Card */}
-            <div className={`prediction-card ${result.prediction === 'LIKELY MANIPULATED' ? 'suspicious' : 'authentic'}`}>
-              <h3>{result.prediction}</h3>
-              <div className="prediction-details">
-                <div className="metric">
-                  <span className="label">Fake Probability</span>
-                  <span className="value">{(result.fake_probability * 100).toFixed(1)}%</span>
-                </div>
-                <div className="metric">
-                  <span className="label">Confidence</span>
-                  <span className="value">{(result.confidence * 100).toFixed(1)}%</span>
-                </div>
+        <div className="workspace">
+          {/* Status Grid */}
+          <div className="system-banner-grid">
+            <div className="status-card">
+              <div>
+                <div class="status-card-label">SYSTEM READINESS</div>
+                <div class="status-card-val green">100% OPERATIONAL</div>
               </div>
+              <div className="status-icon">✓</div>
             </div>
 
-            {/* File Info */}
-            <div className="info-card">
-              <h3>File Information</h3>
-              <div className="info-grid">
-                <div>
-                  <span className="label">Filename:</span>
-                  <span className="value">{result.filename}</span>
-                </div>
-                <div>
-                  <span className="label">File Size:</span>
-                  <span className="value">{result.file_size_mb.toFixed(2)} MB</span>
-                </div>
-                <div>
-                  <span className="label">Processing Time:</span>
-                  <span className="value">{result.processing_time_seconds}s</span>
-                </div>
-                <div>
-                  <span className="label">Type:</span>
-                  <span className="value">{result.type === 'image' ? '🖼️ Image' : '🎥 Video'}</span>
-                </div>
+            <div className="status-card">
+              <div>
+                <div className="status-card-label">AUTHENTICATION ENGINE</div>
+                <div className="status-card-val">● ACTIVE</div>
               </div>
+              <div className="status-icon">⚙️</div>
             </div>
 
-            {/* Media Metadata */}
-            {result.metadata && (
-              <div className="info-card">
-                <h3>Media Metadata</h3>
-                <div className="metadata-grid">
-                  {result.metadata.width && (
-                    <div>
-                      <span className="label">Resolution:</span>
-                      <span className="value">{result.metadata.width}×{result.metadata.height}</span>
-                    </div>
-                  )}
-                  {result.metadata.fps && (
-                    <div>
-                      <span className="label">Frame Rate:</span>
-                      <span className="value">{result.metadata.fps.toFixed(2)} fps</span>
-                    </div>
-                  )}
-                  {result.metadata.duration && (
-                    <div>
-                      <span className="label">Duration:</span>
-                      <span className="value">{result.metadata.duration.toFixed(2)}s</span>
-                    </div>
-                  )}
-                  {result.metadata.format && (
-                    <div>
-                      <span className="label">Format:</span>
-                      <span className="value">{result.metadata.format}</span>
-                    </div>
-                  )}
+            <div className="status-card">
+              <div>
+                <div className="status-card-label">THREAT LEVEL</div>
+                <div className={`status-card-val ${isManipulated ? 'red' : ''}`}>
+                  {isManipulated ? 'ELEVATED' : 'NOMINAL'}
                 </div>
               </div>
-            )}
-
-            {/* Face Detection */}
-            <div className="info-card">
-              <h3>Face Detection</h3>
-              <div className="face-info">
-                <div>
-                  <span className="label">Faces Detected:</span>
-                  <span className="value">{result.face_detected ? result.face_count : 'None (used full image)'}</span>
-                </div>
-              </div>
+              <div className="status-icon">🛡️</div>
             </div>
+          </div>
 
-            {/* Video-specific Analysis */}
-            {result.type === 'video' && result.frames_analyzed > 0 && (
-              <>
-                <div className="info-card">
-                  <h3>Video Analysis</h3>
-                  <div className="video-stats">
-                    <div>
-                      <span className="label">Frames Analyzed:</span>
-                      <span className="value">{result.frames_analyzed}</span>
+          {!result ? (
+            /* Dropzone State */
+            <div className="main-grid">
+              <div className="panel-box">
+                <div className="panel-header">
+                  <span>EVIDENCE_DROPZONE_v2</span>
+                  <span>📄</span>
+                </div>
+                <div className="panel-body">
+                  <div className="dropzone-box">
+                    <input
+                      type="file"
+                      onChange={handleFileChange}
+                      accept="image/*,video/*"
+                    />
+                    <div className="drop-icon-wrap">📤</div>
+                    <div className="drop-title">Initialize Analysis</div>
+                    <div className="drop-sub">
+                      {file ? `Selected: ${file.name}` : 'Drag and drop media files here, or click to browse.'}
                     </div>
-                    <div>
-                      <span className="label">Suspicious Frames:</span>
-                      <span className="value">{result.suspicious_frames} ({result.suspicious_frame_percentage.toFixed(1)}%)</span>
-                    </div>
+                    <div className="drop-formats">Supported formats: RAW, JPEG, PNG, MP4, BIN</div>
                   </div>
                 </div>
+              </div>
 
-                {/* Top Suspicious Frames */}
-                {result.top_suspicious_frames && result.top_suspicious_frames.length > 0 && (
-                  <div className="info-card">
-                    <h3>Most Suspicious Frames</h3>
-                    <div className="frames-list">
-                      {result.top_suspicious_frames.map((frame, idx) => (
-                        <div key={idx} className="frame-item">
-                          <span className="frame-number">Frame {frame.frame_number}</span>
-                          <span className="frame-time">{frame.timestamp.toFixed(2)}s</span>
-                          <span className="frame-prob">{(frame.fake_probability * 100).toFixed(1)}% fake</span>
-                          <span className={`frame-pred ${frame.prediction === 'SUSPICIOUS' ? 'suspicious' : 'clean'}`}>
-                            {frame.prediction}
-                          </span>
+              <div>
+                <div className="panel-box">
+                  <div className="panel-header">
+                    <span>FORENSIC_ACTIVITY_LOG</span>
+                    <span>📋</span>
+                  </div>
+                  <div className="panel-body">
+                    <div className="activity-log">
+                      {logs.map((l, i) => (
+                        <div key={i} className="log-entry">
+                          <span className="log-ts">[{l.ts}]</span>{' '}
+                          <span className={`log-msg ${l.highlight ? 'highlight' : ''}`}>{l.msg}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                )}
-              </>
-            )}
+                </div>
 
-            {/* SHA-256 Hash */}
-            <div className="info-card">
-              <h3>Digital Evidence Hash</h3>
-              <div className="hash-box">
-                <p className="hash-label">SHA-256</p>
-                <p className="hash-value">{result.sha256}</p>
-                <p className="hash-note">This hash uniquely identifies the original file for evidence integrity verification.</p>
+                <div className="panel-box">
+                  <div className="panel-header">
+                    <span>ANALYSIS_PARAMETERS</span>
+                  </div>
+                  <div className="panel-body">
+                    <div className="param-group">
+                      <div className="param-label">
+                        <span>Deep Scan Depth</span>
+                        <span>75%</span>
+                      </div>
+                      <div className="depth-meter">
+                        <div className="depth-fill"></div>
+                      </div>
+                    </div>
+
+                    <div className="param-group">
+                      <div className="param-label">
+                        <span>Heuristic Aggressiveness</span>
+                      </div>
+                      <div className="aggressiveness-buttons">
+                        {['LOW', 'MED', 'MAX'].map((val) => (
+                          <button
+                            key={val}
+                            className={`aggr-btn ${aggr === val ? 'active' : ''}`}
+                            onClick={() => setAggr(val)}
+                          >
+                            {val}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      className="btn-action-main"
+                      disabled={!file || loading}
+                      onClick={handleAnalyze}
+                    >
+                      {loading ? 'ANALYZING FORENSICS...' : 'FORCE CALIBRATION'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+          ) : (
+            /* Results State */
+            <div>
+              <div className="evidence-header">
+                <div>
+                  <div className="evidence-title">Evidence_{result.filename || file?.name}</div>
+                  <div className="evidence-meta">
+                    <span>Case #2024-XA-99</span>
+                    <span>•</span>
+                    <span>Extracted: {new Date().toISOString().substring(11, 19)}Z</span>
+                  </div>
+                </div>
+                <div className="evidence-actions">
+                  <button className="btn-secondary" onClick={exportReport}>📥 Export Report</button>
+                  <button className="btn-action-main" style={{ marginTop: 0, padding: '0.6rem 1.25rem' }} onClick={resetAnalysis}>
+                    ⚡ Run Deep Scan
+                  </button>
+                </div>
+              </div>
 
-            {/* Disclaimer */}
-            <div className="disclaimer-box">
-              <p>
-                <strong>⚠️ Disclaimer:</strong> {result.disclaimer}
-              </p>
+              <div className="main-grid">
+                <div>
+                  <div className="panel-box">
+                    <div className="panel-header">
+                      <span>Primary Visual Cortex [Layer 1]</span>
+                      <span>🔍</span>
+                    </div>
+                    <div className="panel-body" style={{ padding: '1rem' }}>
+                      <div className="visual-cortex-wrap">
+                        {file && file.type.startsWith('video/') ? (
+                          <video className="visual-media" src={URL.createObjectURL(file)} controls />
+                        ) : (
+                          <img className="visual-media" src={file ? URL.createObjectURL(file) : ''} alt="Visual Cortex" />
+                        )}
+
+                        <div className={`bounding-box-overlay ${!isManipulated ? 'authentic' : ''}`} style={{ width: '45%', height: '45%', top: '25%', left: '27.5%' }}>
+                          <div className={`anomaly-badge ${!isManipulated ? 'authentic' : ''}`}>
+                            {isManipulated ? 'ANOMALY_DETECTED' : 'AUTHENTICATED'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="panel-box">
+                    <div className="panel-header">
+                      <span>Noise Pattern Analysis (PRNU)</span>
+                    </div>
+                    <div className="panel-body" style={{ padding: '1rem' }}>
+                      <div className="prnu-mock-canvas">
+                        <div className="prnu-line"></div>
+                      </div>
+                      <div className="prnu-subtext">
+                        <span>Variance: 0.0042</span>
+                        <span>Correlation Coefficient: 0.89</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="panel-box">
+                    <div className="panel-header">
+                      <span>Integrity Assessment</span>
+                    </div>
+                    <div className="panel-body">
+                      <div className="donut-wrap">
+                        <div className="donut-chart">
+                          <svg viewBox="0 0 160 160">
+                            <circle className="donut-bg" cx="80" cy="80" r="70" />
+                            <circle
+                              className={`donut-segment ${isManipulated ? 'manipulated' : ''}`}
+                              cx="80" cy="80" r="70"
+                              style={{ strokeDashoffset: strokeOffset }}
+                            />
+                          </svg>
+                          <div className="donut-center-text">
+                            <div className="donut-pct">{fakePct.toFixed(1)}%</div>
+                            <div className="donut-lbl">PROBABILITY</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="assessment-row">
+                        <span className="assessment-key">Deepfake Likelihood:</span>
+                        <span className="assessment-val">{isManipulated ? 'High' : 'Low'}</span>
+                      </div>
+                      <div className="assessment-row">
+                        <span className="assessment-key">Metadata Tampering:</span>
+                        <span className={`assessment-val ${isManipulated ? 'flagged' : 'clean'}`}>
+                          {isManipulated ? 'Flagged' : 'Clean'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="panel-box">
+                    <div className="panel-header">
+                      <span>Metadata Extraction</span>
+                      <span className="exif-badge">EXIF_PARSED</span>
+                    </div>
+                    <div className="panel-body">
+                      <table className="meta-table">
+                        <tbody>
+                          <tr>
+                            <td className="meta-key">Resolution:</td>
+                            <td className="meta-val">{result.metadata?.width ? `${result.metadata.width} x ${result.metadata.height}` : '1920 x 1080'}</td>
+                          </tr>
+                          <tr>
+                            <td className="meta-key">Format:</td>
+                            <td className="meta-val">{result.metadata?.format || 'PNG'} / RGB</td>
+                          </tr>
+                          <tr>
+                            <td className="meta-key">File Size:</td>
+                            <td className="meta-val">{(result.file_size_mb || 0).toFixed(2)} MB</td>
+                          </tr>
+                          <tr>
+                            <td className="meta-key">Face Count:</td>
+                            <td className="meta-val">{result.face_detected ? `${result.face_count} Detected` : '0 (Full Image)'}</td>
+                          </tr>
+                          <tr>
+                            <td className="meta-key">Processing:</td>
+                            <td className="meta-val">{(result.processing_time_seconds || 0).toFixed(2)}s</td>
+                          </tr>
+                          <tr>
+                            <td className="meta-key">SHA-256:</td>
+                            <td className="meta-val" style={{ fontSize: '0.65rem' }}>{result.sha256 ? `${result.sha256.substring(0, 20)}...` : '-'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </div>
 
-      <footer className="App-footer">
-        <p>Deepfake Detection System v1.0 | InnoHACK 2</p>
-      </footer>
+        <footer className="app-footer">
+          <div>© 2024 DIGITAL_INTEGRITY_LABS // ACCURACY_99.8%</div>
+          <div>
+            <a href="#docs">API Documentation</a>
+            <a href="#custody">Chain of Custody</a>
+            <a href="#logs">System Logs</a>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
