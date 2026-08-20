@@ -12,7 +12,7 @@ It covers three ways to interact with the pipeline:
 print("""
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                                                                            ║
-║                  DEEPFAKE DETECTION PIPELINE - QUICK START                 ║
+║                  AUTHENTIQ DETECTION PIPELINE - QUICK START                ║
 ║                                                                            ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
