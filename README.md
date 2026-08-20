@@ -637,4 +637,3 @@ For issues or questions:
 2. Review test suite output: `python backend/test_pipeline.py`
 3. Enable debug logging: `LOG_LEVEL=DEBUG python backend/main.py`
 4. Check API docs: `http://localhost:8000/docs`
-
