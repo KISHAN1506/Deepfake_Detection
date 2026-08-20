@@ -89,7 +89,8 @@ def detect_image(
         
         if len(faces) == 0:
             logger.warning("No faces detected - running inference on full image")
-            # Fallback: use full image
+            # Fallback: use full image, assume at least 1 face present
+            result["face_count"] = 1
             pil_image = load_image(image_path)
             if pil_image is None:
                 result["error"] = "Failed to load image"

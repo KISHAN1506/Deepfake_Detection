@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Deepfake Detection System - Authentiq v2.4.0-PRO Server
+Deepfake Detection System - Authentiq Server
 Uses Python's built-in http.server with binary-safe multipart parsing.
 
 Usage:
@@ -101,7 +101,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentiq v2.4.0-PRO // Forensic Authentication Suite</title>
+    <title>Authentiq // Forensic Authentication Suite</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -816,23 +816,13 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
             <div class="brand-logo">🛡️</div>
             <div>
                 <div class="brand-title">Authentiq</div>
-                <div class="brand-ver">v2.4.0-PRO</div>
             </div>
         </div>
 
         <ul class="nav-list">
-            <li class="nav-item"><a href="#" onclick="switchTab('overview')">📊 Overview</a></li>
             <li class="nav-item active" id="navForensics"><a href="#" onclick="switchTab('forensics')">🔬 Forensic Analysis</a></li>
-            <li class="nav-item"><a href="#" onclick="switchTab('reports')">📋 Reports</a></li>
-            <li class="nav-item"><a href="#" onclick="switchTab('status')">⚙️ System Status</a></li>
         </ul>
 
-        <div class="sidebar-bottom">
-            <ul class="nav-list">
-                <li class="nav-item"><a href="#" onclick="toggleTerminal()">💻 Terminal</a></li>
-                <li class="nav-item"><a href="#" onclick="switchTab('logs')">📜 Logs</a></li>
-            </ul>
-        </div>
     </aside>
 
     <!-- Main App Container -->
@@ -840,10 +830,6 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
         <!-- Top Bar -->
         <header class="top-bar">
             <div class="suite-tag">FORENSIC_AUTHENTICATION_SUITE</div>
-            
-            <div class="top-search-box">
-                <input type="text" placeholder="Search parameters..." id="searchInput">
-            </div>
 
             <div class="top-actions">
                 <div class="status-pill">
@@ -925,26 +911,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
                                 <span>ANALYSIS_PARAMETERS</span>
                             </div>
                             <div class="panel-body">
-                                <div class="param-group">
-                                    <div class="param-label">
-                                        <span>Deep Scan Depth</span>
-                                        <span>75%</span>
-                                    </div>
-                                    <div class="depth-meter">
-                                        <div class="depth-fill"></div>
-                                    </div>
-                                </div>
 
-                                <div class="param-group">
-                                    <div class="param-label">
-                                        <span>Heuristic Aggressiveness</span>
-                                    </div>
-                                    <div class="aggressiveness-buttons">
-                                        <button class="aggr-btn" onclick="setAggr(this)">LOW</button>
-                                        <button class="aggr-btn active" onclick="setAggr(this)">MED</button>
-                                        <button class="aggr-btn" onclick="setAggr(this)">MAX</button>
-                                    </div>
-                                </div>
 
                                 <button class="btn-action-main" id="btnStartScan" disabled onclick="runAnalysis()">
                                     FORCE CALIBRATION
@@ -996,19 +963,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
                             </div>
                         </div>
 
-                        <!-- PRNU Noise Analysis Box -->
-                        <div class="panel-box">
-                            <div class="panel-header">
-                                <span>Noise Pattern Analysis (PRNU)</span>
-                            </div>
-                            <div class="panel-body" style="padding: 1rem;">
-                                <canvas class="prnu-canvas" id="prnuCanvas"></canvas>
-                                <div class="prnu-subtext">
-                                    <span>Variance: 0.0042</span>
-                                    <span>Correlation Coefficient: 0.89</span>
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
 
                     <!-- Right Inspection Column -->
@@ -1257,8 +1212,6 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
             document.getElementById('procVal').textContent = `${(data.processing_time_seconds || 0).toFixed(2)}s`;
             document.getElementById('hashVal').textContent = data.sha256 ? `${data.sha256.substring(0,20)}...` : '-';
 
-            // Draw PRNU noise canvas
-            drawPrnuCanvas();
             addLog(`Analysis complete. Prediction: ${data.prediction}`);
         }
 
@@ -1307,33 +1260,6 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
 
         function toggleTerminal() {
             alert("Authentiq Forensic Terminal v2.4 active.");
-        }
-
-        function drawPrnuCanvas() {
-            const canvas = document.getElementById('prnuCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
-
-            ctx.fillStyle = '#111827';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw noise waveform
-            ctx.strokeStyle = '#84cc16';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-
-            const sliceWidth = canvas.width / 100;
-            let x = 0;
-
-            for (let i = 0; i < 100; i++) {
-                const y = (canvas.height / 2) + (Math.sin(i * 0.2) * 20) + ((Math.random() - 0.5) * 30);
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-                x += sliceWidth;
-            }
-            ctx.stroke();
         }
     </script>
 </body>
@@ -1455,13 +1381,14 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
 def main():
     """Start the HTTP server."""
     print("\n" + "=" * 70)
-    print("🚀 Authentiq v2.4.0-PRO FORENSIC AUTHENTICATION SERVER")
+    print("🚀 Authentiq FORENSIC AUTHENTICATION SERVER")
     print("=" * 70)
     
     host = 'localhost'
     port = 8000
     
     server_address = (host, port)
+    HTTPServer.allow_reuse_address = True
     httpd = HTTPServer(server_address, DeepfakeDetectionHandler)
     
     print(f"\n✅ Server running at: http://{host}:{port}")

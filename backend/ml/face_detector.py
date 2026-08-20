@@ -73,9 +73,8 @@ def detect_faces(image_path: str) -> Tuple[Optional[np.ndarray], List[Tuple[int,
         faces = cascade.detectMultiScale(
             gray,
             scaleFactor=1.1,
-            minNeighbors=5,
-            minSize=(30, 30),
-            maxSize=(400, 400)
+            minNeighbors=3,
+            minSize=(30, 30)
         )
         
         if len(faces) == 0:

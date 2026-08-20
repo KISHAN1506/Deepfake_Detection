@@ -94,33 +94,19 @@ function App() {
           <div className="brand-logo">🛡️</div>
           <div>
             <div className="brand-title">Authentiq</div>
-            <div className="brand-ver">v2.4.0-PRO</div>
           </div>
         </div>
 
         <ul className="nav-list">
-          <li className="nav-item"><a href="#overview">📊 Overview</a></li>
           <li className="nav-item active"><a href="#forensics">🔬 Forensic Analysis</a></li>
-          <li className="nav-item"><a href="#reports">📋 Reports</a></li>
-          <li className="nav-item"><a href="#status">⚙️ System Status</a></li>
         </ul>
 
-        <div className="sidebar-bottom">
-          <ul className="nav-list">
-            <li className="nav-item"><a href="#terminal">💻 Terminal</a></li>
-            <li className="nav-item"><a href="#logs">📜 Logs</a></li>
-          </ul>
-        </div>
       </aside>
 
       {/* Main Content */}
       <div className="app-main-content">
         <header className="top-bar">
           <div className="suite-tag">FORENSIC_AUTHENTICATION_SUITE</div>
-          
-          <div className="top-search-box">
-            <input type="text" placeholder="Search parameters..." />
-          </div>
 
           <div className="top-actions">
             <div className="status-pill">
@@ -208,32 +194,7 @@ function App() {
                     <span>ANALYSIS_PARAMETERS</span>
                   </div>
                   <div className="panel-body">
-                    <div className="param-group">
-                      <div className="param-label">
-                        <span>Deep Scan Depth</span>
-                        <span>75%</span>
-                      </div>
-                      <div className="depth-meter">
-                        <div className="depth-fill"></div>
-                      </div>
-                    </div>
 
-                    <div className="param-group">
-                      <div className="param-label">
-                        <span>Heuristic Aggressiveness</span>
-                      </div>
-                      <div className="aggressiveness-buttons">
-                        {['LOW', 'MED', 'MAX'].map((val) => (
-                          <button
-                            key={val}
-                            className={`aggr-btn ${aggr === val ? 'active' : ''}`}
-                            onClick={() => setAggr(val)}
-                          >
-                            {val}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
 
                     <button
                       className="btn-action-main"
@@ -290,20 +251,7 @@ function App() {
                     </div>
                   </div>
 
-                  <div className="panel-box">
-                    <div className="panel-header">
-                      <span>Noise Pattern Analysis (PRNU)</span>
-                    </div>
-                    <div className="panel-body" style={{ padding: '1rem' }}>
-                      <div className="prnu-mock-canvas">
-                        <div className="prnu-line"></div>
-                      </div>
-                      <div className="prnu-subtext">
-                        <span>Variance: 0.0042</span>
-                        <span>Correlation Coefficient: 0.89</span>
-                      </div>
-                    </div>
-                  </div>
+
                 </div>
 
                 <div>
