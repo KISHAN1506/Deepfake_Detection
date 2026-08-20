@@ -2,7 +2,7 @@
 
 An AI-powered system for detecting deepfake videos and images using EfficientNet-B0 with face detection and frame-level analysis.
 
-**⚡ Status:** ✅ OPERATIONAL | **🚀 Quick Start:** `python simple_server.py` then visit `http://localhost:8000`
+**🚀 Quick Start:** create the Python environment, start `simple_server.py`, then visit `http://localhost:8000`.
 
 ## Features
 
@@ -68,73 +68,50 @@ InnoHACK 2/
 
 ---
 
-## 🚀 Quick Start (3 Steps)
+## Quick Start
+
+From the project root, run:
 
 ```bash
-# 1. Navigate to project
-cd "InnoHACK 2"
-
-# 2. Activate environment and start server
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 python simple_server.py
-
-# 3. Open browser
-# http://localhost:8000
 ```
 
-**That's it!** Upload an image and analyze. ✅
-
----
+Open [http://localhost:8000](http://localhost:8000). The built-in server provides
+both the web UI and API, so the React frontend is not required for normal use.
 
 ## 📖 Documentation
 
-**For comprehensive context on what's been completed and what's next, see:**
-- 📋 **[CONTEXT.md](CONTEXT.md)** - Complete project status for LLMs
-- 📊 **[STATUS.txt](STATUS.txt)** - Visual status dashboard
-- 💡 **[SYSTEM_STATUS.md](SYSTEM_STATUS.md)** - Detailed reference guide
-- 🚀 **[QUICKSTART.py](QUICKSTART.py)** - Interactive quick start guide
-
----
+- [CONTEXT.md](CONTEXT.md) - Complete project status for LLMs
+- [STATUS.txt](STATUS.txt) - Visual status dashboard
+- [SYSTEM_STATUS.md](SYSTEM_STATUS.md) - Detailed reference guide
+- [QUICKSTART.py](QUICKSTART.py) - Interactive quick start guide
 
 ## Installation & Setup
 
 ### Prerequisites
 
-- Python 3.8+ (already have 3.14.3 ✅)
-- Virtual environment (already created ✅)
-- ~2GB free disk space for model downloads (done ✅)
+- Python 3.8+
+- Node.js and npm (only for the optional React frontend)
+- ~2GB free disk space for model downloads
 - 4GB+ RAM (usually available)
 
-### Step 1: Activate Python Environment
+### Step 1: Create the Python Environment
 
 ```bash
-cd "InnoHACK 2"
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+cd /Users/kishanagarwal/Documents/Deepfake_Detection
+python3 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
 ### Step 2: Test the ML Pipeline (Optional)
 
-Before starting the server, verify ML components work:
-
 ```bash
 python backend/test_pipeline.py
-```
-
-**Expected output:**
-```
-TEST 1: Model Loading
-✓ Model loaded successfully
-
-TEST 2: Image Analysis (CATimg.png)
-✓ Analysis completed in 0.22s
-  - Prediction: LIKELY MANIPULATED
-  - Fake Probability: 65.70%
-  - Face Detected: False
-  
-...
-
-Total: 6/6 tests passed
-🎉 All tests passed! Pipeline is ready.
 ```
 
 ### Step 3: Start the HTTP Server
@@ -163,9 +140,10 @@ python simple_server.py
 
 Server is now running at: **http://localhost:8000** ✅
 
-### Step 4 (Optional): Deploy React Frontend
+### Step 4 (Optional): Run the React Frontend
 
-For a more polished UI, you can also run the React frontend:
+The built-in server already provides a usable web UI. Run the React frontend only if
+you are developing the React interface. Open a second terminal, then run:
 
 ```bash
 cd frontend
@@ -173,7 +151,8 @@ npm install
 npm start
 ```
 
-Frontend will run at: **http://localhost:3000**
+The React development server runs at **http://localhost:3000** and proxies API
+requests to **http://localhost:8000**. Start `python simple_server.py` first.
 
 ---
 
@@ -411,21 +390,37 @@ CORS_ORIGINS = ["http://localhost:3000", "*"]
 
 ## Troubleshooting
 
+### "No module named ..." or dependency installation errors
+
+Create or activate the environment and install dependencies from the project root:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate  # Or: .venv\Scripts\activate on Windows
+python -m pip install -r requirements.txt
+```
+
 ### "python simple_server.py" command not found
 
-Make sure you've activated the virtual environment first:
+Run the command from the project root, where `simple_server.py` is located:
 ```bash
-source venv/bin/activate  # Or: venv\Scripts\activate on Windows
-```
-
-### "ModuleNotFoundError: No module named 'backend'"
-
-Run from the project root directory:
-```bash
-cd "InnoHACK 2"
-source venv/bin/activate
+cd /Users/kishanagarwal/Documents/Deepfake_Detection
+source .venv/bin/activate
 python simple_server.py
 ```
+
+On systems where `python` is not available, use `python3 simple_server.py`.
+
+### "npm start" fails
+
+Install the frontend dependencies from the `frontend` directory, then start the
+React development server:
+```bash
+cd frontend
+npm install
+npm start
+```
+
+The project uses `react-scripts`; `npm start` is the supported frontend command.
 
 ### "Port 8000 already in use"
 
@@ -468,15 +463,9 @@ EfficientNet-B0 downloads ~22 MB on first run from Hugging Face and caches local
 
 ### SSL Certificate Error during pip install
 
-This is a network sandbox issue. It's OK because:
-- ✅ All critical packages already installed
-- ✅ simple_server.py requires no external packages
-- ✅ System fully functional without fastapi/opencv
-
-If you need those packages:
-- Try different network
-- Use Docker
-- Install wheels offline
+The project requires the packages listed in `requirements.txt`, including PyTorch,
+Transformers, and Pillow. If pip cannot reach the package index, try again on a
+network that permits package downloads or install the packages from local wheels.
 
 ---
 
