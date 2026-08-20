@@ -1,9 +1,9 @@
 
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║              🎉 DEEPFAKE DETECTION PIPELINE - FINAL STATUS 🎉                ║
+║              🎉 DEEPFAKE DETECTION PIPELINE - FINAL STATUS 🎉                  ║
 ║                                                                               ║
-║                        ✅ PROJECT COMPLETE ✅                                ║
+║                        ✅ PROJECT COMPLETE ✅                                  ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 
