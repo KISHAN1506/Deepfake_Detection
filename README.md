@@ -72,9 +72,26 @@ InnoHACK 2/
 
 From the project root, run:
 
+**macOS / Linux:**
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python -m pip install -r requirements.txt
+python simple_server.py
+```
+
+**Windows (Command Prompt):**
+```cmd
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install -r requirements.txt
+python simple_server.py
+```
+
+**Windows (PowerShell):**
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python simple_server.py
 ```
@@ -100,10 +117,26 @@ both the web UI and API, so the React frontend is not required for normal use.
 
 ### Step 1: Create the Python Environment
 
+**macOS / Linux:**
 ```bash
-cd /Users/kishanagarwal/Documents/Deepfake_Detection
 python3 -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+**Windows (Command Prompt):**
+```cmd
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+**Windows (PowerShell):**
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
@@ -403,8 +436,16 @@ python -m pip install -r requirements.txt
 
 Run the command from the project root, where `simple_server.py` is located:
 ```bash
-cd /Users/kishanagarwal/Documents/Deepfake_Detection
+# macOS / Linux
 source .venv/bin/activate
+python simple_server.py
+
+# Windows (CMD)
+.venv\Scripts\activate
+python simple_server.py
+
+# Windows (PowerShell)
+.\.venv\Scripts\Activate.ps1
 python simple_server.py
 ```
 
