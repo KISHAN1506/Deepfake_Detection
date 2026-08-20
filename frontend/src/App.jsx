@@ -93,7 +93,7 @@ function App() {
         <div className="brand-header">
           <div className="brand-logo">🛡️</div>
           <div>
-            <div className="brand-title">VERIFY_OS</div>
+            <div className="brand-title">Authentiq</div>
             <div className="brand-ver">v2.4.0-PRO</div>
           </div>
         </div>

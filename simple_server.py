@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Deepfake Detection System - VERIFY_OS v2.4.0-PRO Server
+Deepfake Detection System - Authentiq v2.4.0-PRO Server
 Uses Python's built-in http.server with binary-safe multipart parsing.
 
 Usage:
@@ -101,7 +101,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VERIFY_OS v2.4.0-PRO // Forensic Authentication Suite</title>
+    <title>Authentiq v2.4.0-PRO // Forensic Authentication Suite</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -815,7 +815,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
         <div class="brand-header">
             <div class="brand-logo">🛡️</div>
             <div>
-                <div class="brand-title">VERIFY_OS</div>
+                <div class="brand-title">Authentiq</div>
                 <div class="brand-ver">v2.4.0-PRO</div>
             </div>
         </div>
@@ -1088,7 +1088,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
         <footer class="app-footer">
             <div>© 2024 DIGITAL_INTEGRITY_LABS // ACCURACY_99.8%</div>
             <div>
-                <a href="#" onclick="alert('VERIFY_OS API v2.4')">API Documentation</a>
+                <a href="#" onclick="alert('Authentiq API v2.4')">API Documentation</a>
                 <a href="#" onclick="alert('Chain of Custody Verification')">Chain of Custody</a>
                 <a href="#" onclick="alert('System Logs active')">System Logs</a>
             </div>
@@ -1306,7 +1306,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
         }
 
         function toggleTerminal() {
-            alert("VERIFY_OS Forensic Terminal v2.4 active.");
+            alert("Authentiq Forensic Terminal v2.4 active.");
         }
 
         function drawPrnuCanvas() {
@@ -1455,7 +1455,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
 def main():
     """Start the HTTP server."""
     print("\n" + "=" * 70)
-    print("🚀 VERIFY_OS v2.4.0-PRO FORENSIC AUTHENTICATION SERVER")
+    print("🚀 Authentiq v2.4.0-PRO FORENSIC AUTHENTICATION SERVER")
     print("=" * 70)
     
     host = 'localhost'
