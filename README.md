@@ -31,58 +31,8 @@ An AI-powered system for detecting deepfake videos and images using EfficientNet
 - **⚙️ CPU Compatible**: Works on machines without GPU
 - **🔌 No External Dependencies**: HTTP server runs on Python built-ins
 
-## System Architecture
-
-```
-┌─ Frontend (React)
-│  └─ Upload interface
-│  └─ Real-time results dashboard
-│
-├─ Backend (FastAPI)
-│  └─ /api/analyze
-│  └─ /api/analyze/image
-│  └─ /api/analyze/video
-│
-└─ ML Pipeline
-   ├─ model.py - EfficientNet-B0 loading
-   ├─ preprocessing.py - Image preprocessing
-   ├─ face_detector.py - Face detection with OpenCV
-   ├─ image_detector.py - Single image analysis
-   └─ video_detector.py - Multi-frame video analysis
-```
-
-## Project Structure
-
-```
-InnoHACK 2/
-├── backend/
-│   ├── ml/
-│   │   ├── model.py               # Model loading and inference
-│   │   ├── preprocessing.py       # Image preprocessing
-│   │   ├── face_detector.py       # Face detection
-│   │   ├── image_detector.py      # Image analysis pipeline
-│   │   ├── video_detector.py      # Video analysis pipeline
-│   │   ├── utils.py               # Utilities (hashing, file ops)
-│   │   └── __init__.py
-│   ├── config.py                  # Configuration and constants
-│   ├── main.py                    # FastAPI application
-│   ├── test_pipeline.py           # Test suite
-│   └── __init__.py
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx                # Main React component
-│   │   ├── App.css                # Styling
-│   │   ├── index.css              # Global styles
-│   │   └── main.jsx               # React entry point
-│   ├── index.html                 # HTML template
-│   └── package.json               # Frontend dependencies
-├── requirements.txt               # Python dependencies
-├── file1.py                       # Original EfficientNet example
-├── CATimg.png                     # Test image
-└── README.md                      # This file
-```
-
 ---
+
 
 ## Quick Start
 
