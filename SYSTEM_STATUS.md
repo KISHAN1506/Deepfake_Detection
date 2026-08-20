@@ -14,7 +14,6 @@ cd "/Users/kishanagarwal/Documents/InnoHACK 2"
 source venv/bin/activate
 python demo_pipeline.py
 ```
-
 ### Step 2: Start the HTTP Server
 ```bash
 python simple_server.py

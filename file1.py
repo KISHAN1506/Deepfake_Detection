@@ -3,7 +3,6 @@
 This script classifies images using Google's EfficientNet-B0 model trained on ImageNet.
 It can process local image files and predict the class of objects in the image.
 """
-
 import torch
 from transformers import EfficientNetImageProcessor, EfficientNetForImageClassification
 from PIL import Image

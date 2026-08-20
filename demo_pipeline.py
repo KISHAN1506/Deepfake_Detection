@@ -18,7 +18,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
 def demo_image_detection():
     """Demonstrate image deepfake detection."""
     from ml import detect_image
-    
     print("\n" + "=" * 70)
     print("DEMO 1: IMAGE DEEPFAKE DETECTION")
     print("=" * 70)
