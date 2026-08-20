@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+# Authentiq Forensics - Git Ignore Rules
 __pycache__/
 *.py[cod]
 *$py.class
