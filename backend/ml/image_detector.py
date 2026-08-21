@@ -87,64 +87,59 @@ def detect_image(
             result["error"] = "Failed to load image"
             return result
         
+        pil_image = None
+        
         if len(faces) == 0:
             logger.warning("No faces detected - running inference on full image")
             # Fallback: use full image, assume at least 1 face present
             result["face_count"] = 1
-            pil_image = load_image(image_path)
-            if pil_image is None:
-                result["error"] = "Failed to load image"
-                return result
-            
-            model, processor = load_model()
-            input_tensor = preprocess_image(pil_image, processor)
-            
-            if input_tensor is None:
-                result["error"] = "Preprocessing failed"
-                return result
-            
-            real_prob, fake_prob, predicted_class = infer_image(input_tensor)
             result["face_detected"] = False
+            pil_image = load_image(image_path)
         else:
             # Get the largest face
             largest_face = get_largest_face(faces)
             face_crop = crop_face(image_array, largest_face)
             
             if face_crop is None:
-                result["error"] = "Failed to crop face"
-                return result
-            
-            # Convert face crop from BGR to RGB PIL Image
-            pil_face = cv2_to_pil_image(face_crop)
-            
-            if pil_face is None:
-                # Fallback to full image
+                logger.warning("Failed to crop face - falling back to full image")
+                result["face_count"] = 1
+                result["face_detected"] = False
                 pil_image = load_image(image_path)
-                if pil_image is None:
-                    result["error"] = "Failed to convert image"
-                    return result
             else:
-                pil_image = pil_face
-            
-            # Preprocess and infer
-            model, processor = load_model()
-            input_tensor = preprocess_image(pil_image, processor)
-            
-            if input_tensor is None:
-                result["error"] = "Preprocessing failed"
-                return result
-            
-            real_prob, fake_prob, predicted_class = infer_image(input_tensor)
-            result["face_detected"] = True
-            
-            # Add face bounding box
-            result["bbox"] = list(largest_face)  # [x, y, w, h]
-            
-            # Normalize bboxes
-            result["normalized_bbox"] = faces_to_normalized_bboxes(
-                [largest_face],
-                image_array.shape[:2]
-            )[0]
+                # Convert face crop from BGR to RGB PIL Image
+                pil_face = cv2_to_pil_image(face_crop)
+                
+                if pil_face is None:
+                    logger.warning("Failed to convert face crop - falling back to full image")
+                    result["face_count"] = 1
+                    result["face_detected"] = False
+                    pil_image = load_image(image_path)
+                else:
+                    pil_image = pil_face
+                    result["face_detected"] = True
+                    
+                    # Add face bounding box
+                    result["bbox"] = list(largest_face)  # [x, y, w, h]
+                    
+                    # Normalize bboxes
+                    result["normalized_bbox"] = faces_to_normalized_bboxes(
+                        [largest_face],
+                        image_array.shape[:2]
+                    )[0]
+        
+        if pil_image is None:
+            result["error"] = "Failed to load image"
+            return result
+        
+        # Preprocess and infer
+        model, processor = load_model()
+        input_tensor = preprocess_image(pil_image, processor)
+        
+        if input_tensor is None:
+            result["error"] = "Preprocessing failed"
+            return result
+        
+        real_prob, fake_prob, predicted_class = infer_image(input_tensor)
         
         # Step 5: Determine prediction
         if fake_prob >= fake_threshold:

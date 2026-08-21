@@ -1208,7 +1208,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
                 document.getElementById('formatVal').textContent = `${data.metadata.format || 'PNG'} / RGB`;
             }
             document.getElementById('sizeVal').textContent = `${(data.file_size_mb || 0).toFixed(2)} MB`;
-            document.getElementById('faceVal').textContent = data.face_detected ? `${data.face_count} Detected` : '0 (Full Image)';
+            document.getElementById('faceVal').textContent = data.face_detected ? `${data.face_count} Detected` : `${data.face_count || 1} (Full Image)`;
             document.getElementById('procVal').textContent = `${(data.processing_time_seconds || 0).toFixed(2)}s`;
             document.getElementById('hashVal').textContent = data.sha256 ? `${data.sha256.substring(0,20)}...` : '-';
 

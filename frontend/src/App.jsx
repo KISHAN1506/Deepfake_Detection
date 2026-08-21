@@ -312,7 +312,7 @@ function App() {
                           </tr>
                           <tr>
                             <td className="meta-key">Face Count:</td>
-                            <td className="meta-val">{result.face_detected ? `${result.face_count} Detected` : '0 (Full Image)'}</td>
+                             <td className="meta-val">{result.face_detected ? `${result.face_count} Detected` : `${result.face_count || 1} (Full Image)`}</td>
                           </tr>
                           <tr>
                             <td className="meta-key">Processing:</td>
