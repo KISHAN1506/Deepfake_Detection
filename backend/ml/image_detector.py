@@ -4,9 +4,8 @@ Image-level deepfake detection module.
 
 import logging
 import time
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from PIL import Image
-import numpy as np
 
 from .model import load_model, infer_image, get_device
 from .preprocessing import load_image, preprocess_image, validate_image_file, get_image_metadata

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function App() {
@@ -7,6 +7,8 @@ function App() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [aggr, setAggr] = useState('MED');
+  const [boxStyle, setBoxStyle] = useState({ display: 'none' });
+  const [activeFrameSuspicious, setActiveFrameSuspicious] = useState(false);
   const [logs, setLogs] = useState([
     { ts: '10:41:59', msg: 'System initialized successfully.' },
     { ts: '10:42:05', msg: 'Connecting to auth heuristic servers...' },
@@ -65,10 +67,75 @@ function App() {
     }
   };
 
+  const updateBoxPosition = () => {
+    if (!result) {
+      setBoxStyle({ display: 'none' });
+      return;
+    }
+    
+    let bbox = result.normalized_bbox;
+    if (!bbox) {
+      // Centered fallback box (45% width/height, 25% top, 27.5% left)
+      bbox = { x: 0.275, y: 0.25, width: 0.45, height: 0.45 };
+    }
+    
+    setBoxStyle({
+      left: `${bbox.x * 100}%`,
+      top: `${bbox.y * 100}%`,
+      width: `${bbox.width * 100}%`,
+      height: `${bbox.height * 100}%`,
+      display: 'block',
+      position: 'absolute'
+    });
+  };
+
+  const updateBoxForTimestamp = (time) => {
+    if (!result || !result.frame_results) return;
+
+    let closestFrame = null;
+    let minDiff = Infinity;
+    for (const frame of result.frame_results) {
+      const diff = Math.abs(frame.timestamp - time);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestFrame = frame;
+      }
+    }
+
+    if (closestFrame) {
+      const isSuspicious = closestFrame.prediction === 'SUSPICIOUS';
+      setActiveFrameSuspicious(isSuspicious);
+
+      let bbox = closestFrame.normalized_bbox;
+      if (!bbox) {
+        setBoxStyle({ display: 'none' });
+        return;
+      }
+
+      setBoxStyle({
+        left: `${bbox.x * 100}%`,
+        top: `${bbox.y * 100}%`,
+        width: `${bbox.width * 100}%`,
+        height: `${bbox.height * 100}%`,
+        display: 'block',
+        position: 'absolute'
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (result) {
+      setActiveFrameSuspicious(result.prediction === 'LIKELY MANIPULATED');
+      updateBoxPosition();
+    }
+  }, [result]);
+
   const resetAnalysis = () => {
     setFile(null);
     setResult(null);
     setError(null);
+    setBoxStyle({ display: 'none' });
+    setActiveFrameSuspicious(false);
   };
 
   const exportReport = () => {
@@ -236,17 +303,48 @@ function App() {
                     </div>
                     <div className="panel-body" style={{ padding: '1rem' }}>
                       <div className="visual-cortex-wrap">
-                        {file && file.type.startsWith('video/') ? (
-                          <video className="visual-media" src={URL.createObjectURL(file)} controls />
-                        ) : (
-                          <img className="visual-media" src={file ? URL.createObjectURL(file) : ''} alt="Visual Cortex" />
-                        )}
-
-                        <div className={`bounding-box-overlay ${!isManipulated ? 'authentic' : ''}`} style={{ width: '45%', height: '45%', top: '25%', left: '27.5%' }}>
-                          <div className={`anomaly-badge ${!isManipulated ? 'authentic' : ''}`}>
-                            {isManipulated ? 'ANOMALY_DETECTED' : 'AUTHENTICATED'}
+                        {result && result.type === 'video' ? (
+                          <div id="videoFramesGrid" style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', padding: '0.5rem', maxHeight: '500px', overflowY: 'auto' }}>
+                            {result.frame_results?.map((frame, idx) => {
+                              const isSuspicious = frame.prediction === 'SUSPICIOUS';
+                              const bbox = frame.normalized_bbox;
+                              return (
+                                <div key={idx} className="frame-item" style={{ position: 'relative', background: '#000', borderRadius: '4px', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-main)' }}>
+                                  <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
+                                    <img src={frame.image_data} style={{ width: '100%', display: 'block' }} alt={`Frame ${idx}`} />
+                                    {bbox && (
+                                      <div className={`bounding-box-overlay ${!isSuspicious ? 'authentic' : ''}`} style={{ position: 'absolute', left: `${bbox.x * 100}%`, top: `${bbox.y * 100}%`, width: `${bbox.width * 100}%`, height: `${bbox.height * 100}%` }}>
+                                        <div className={`anomaly-badge ${!isSuspicious ? 'authentic' : ''}`} style={{ fontSize: '0.5rem', padding: '1px 4px', top: '-16px', left: 0 }}>
+                                          {isSuspicious ? 'ANOMALY' : 'AUTHENTIC'}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div style={{ padding: '0.4rem', background: '#1e293b', color: '#fff', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span>T: {frame.timestamp.toFixed(2)}s</span>
+                                    <span style={{ color: isSuspicious ? 'var(--danger-red)' : 'var(--success-green)', fontWeight: 700 }}>
+                                      {isSuspicious ? 'FAKE' : 'CLEAN'}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        </div>
+                        ) : (
+                          <div className="media-wrapper" style={{ position: 'relative', display: 'inline-block', maxWidth: '100%', maxHeight: '380px' }}>
+                            {file && file.type.startsWith('video/') ? (
+                              <video className="visual-media" src={URL.createObjectURL(file)} onTimeUpdate={(e) => updateBoxForTimestamp(e.target.currentTime)} controls />
+                            ) : (
+                              <img className="visual-media" src={file ? URL.createObjectURL(file) : ''} alt="Visual Cortex" />
+                            )}
+
+                            <div className={`bounding-box-overlay ${!activeFrameSuspicious ? 'authentic' : ''}`} style={boxStyle}>
+                              <div className={`anomaly-badge ${!activeFrameSuspicious ? 'authentic' : ''}`}>
+                                {activeFrameSuspicious ? 'ANOMALY_DETECTED' : 'AUTHENTICATED'}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -304,7 +402,11 @@ function App() {
                           </tr>
                           <tr>
                             <td className="meta-key">Format:</td>
-                            <td className="meta-val">{result.metadata?.format || 'PNG'} / RGB</td>
+                            <td className="meta-val">
+                              {result.type === 'video'
+                                ? `${(result.filename || '').split('.').pop().toUpperCase() || 'MP4'} / YUV`
+                                : `${result.metadata?.format || 'PNG'} / RGB`}
+                            </td>
                           </tr>
                           <tr>
                             <td className="meta-key">File Size:</td>

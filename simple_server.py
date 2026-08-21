@@ -952,13 +952,18 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
                             </div>
                             <div class="panel-body" style="padding: 1rem;">
                                 <div class="visual-cortex-wrap" id="visualCortexWrap">
-                                    <img id="imagePreview" class="visual-media" style="display:none;" alt="Visual Cortex">
-                                    <video id="videoPreview" class="visual-media" style="display:none;" controls></video>
-                                    
-                                    <!-- Bounding Box -->
-                                    <div class="bounding-box-overlay" id="boxOverlay">
-                                        <div class="anomaly-badge" id="anomalyBadge">ANOMALY_DETECTED</div>
+                                    <div class="media-wrapper" id="mediaWrapper" style="position: relative; display: inline-block; max-width: 100%; max-height: 380px;">
+                                        <img id="imagePreview" class="visual-media" style="display:none;" alt="Visual Cortex">
+                                        <video id="videoPreview" class="visual-media" style="display:none;" controls></video>
+                                        
+                                        <!-- Bounding Box -->
+                                        <div class="bounding-box-overlay" id="boxOverlay" style="display: none;">
+                                            <div class="anomaly-badge" id="anomalyBadge">ANOMALY_DETECTED</div>
+                                        </div>
                                     </div>
+                                    
+                                    <!-- Frames Grid for Video -->
+                                    <div id="videoFramesGrid" style="display: none; width: 100%; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; padding: 0.5rem; max-height: 500px; overflow-y: auto;"></div>
                                 </div>
                             </div>
                         </div>
@@ -1144,16 +1149,61 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
             // Preview
             const imgPreview = document.getElementById('imagePreview');
             const vidPreview = document.getElementById('videoPreview');
+            const mediaWrapper = document.getElementById('mediaWrapper');
+            const framesGrid = document.getElementById('videoFramesGrid');
             const url = URL.createObjectURL(selectedFile);
 
-            if (selectedFile.type.startsWith('video/')) {
-                imgPreview.style.display = 'none';
-                vidPreview.style.display = 'block';
-                vidPreview.src = url;
+            if (data.type === 'video') {
+                mediaWrapper.style.display = 'none';
+                framesGrid.style.display = 'grid';
+                framesGrid.innerHTML = '';
+                
+                if (data.frame_results) {
+                    data.frame_results.forEach((frame, idx) => {
+                        const isSuspicious = frame.prediction === 'SUSPICIOUS';
+                        const bbox = frame.normalized_bbox;
+                        
+                        let bboxHtml = '';
+                        if (bbox) {
+                            bboxHtml = `
+                                <div class="bounding-box-overlay ${!isSuspicious ? 'authentic' : ''}" style="position: absolute; left: ${bbox.x * 100}%; top: ${bbox.y * 100}%; width: ${bbox.width * 100}%; height: ${bbox.height * 100}%;">
+                                    <div class="anomaly-badge ${!isSuspicious ? 'authentic' : ''}" style="font-size: 0.5rem; padding: 1px 4px; top: -16px; left: 0;">
+                                        ${isSuspicious ? 'ANOMALY' : 'AUTHENTIC'}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        const frameHtml = `
+                            <div class="frame-item" style="position: relative; background: #000; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border-main);">
+                                <div style="position: relative; display: inline-block; width: 100%;">
+                                    <img src="${frame.image_data || ''}" style="width: 100%; display: block;" alt="Frame ${idx}" />
+                                    ${bboxHtml}
+                                </div>
+                                <div style="padding: 0.4rem; background: #1e293b; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>T: ${frame.timestamp.toFixed(2)}s</span>
+                                    <span style="color: ${isSuspicious ? 'var(--danger-red)' : 'var(--success-green)'}; font-weight: 700;">
+                                        ${isSuspicious ? 'FAKE' : 'CLEAN'}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                        framesGrid.insertAdjacentHTML('beforeend', frameHtml);
+                    });
+                }
             } else {
-                vidPreview.style.display = 'none';
-                imgPreview.style.display = 'block';
-                imgPreview.src = url;
+                framesGrid.style.display = 'none';
+                mediaWrapper.style.display = 'inline-block';
+                
+                if (selectedFile.type.startsWith('video/')) {
+                    imgPreview.style.display = 'none';
+                    vidPreview.style.display = 'block';
+                    vidPreview.src = url;
+                } else {
+                    vidPreview.style.display = 'none';
+                    imgPreview.style.display = 'block';
+                    imgPreview.src = url;
+                }
             }
 
             // Bounding Box / Anomaly overlay setup
@@ -1177,10 +1227,7 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
             }
 
             // Position bounding box
-            box.style.width = '45%';
-            box.style.height = '45%';
-            box.style.top = '25%';
-            box.style.left = '27.5%';
+            updateBoundingBoxPosition();
 
             // Donut gauge
             const pct = Math.round((data.fake_probability || 0) * 100);
@@ -1205,7 +1252,12 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
             // Metadata
             if (data.metadata) {
                 document.getElementById('resVal').textContent = `${data.metadata.width || '1920'} x ${data.metadata.height || '1080'}`;
-                document.getElementById('formatVal').textContent = `${data.metadata.format || 'PNG'} / RGB`;
+                if (data.type === 'video') {
+                    const formatExt = (data.filename || '').split('.').pop().toUpperCase() || 'MP4';
+                    document.getElementById('formatVal').textContent = `${formatExt} / YUV`;
+                } else {
+                    document.getElementById('formatVal').textContent = `${data.metadata.format || 'PNG'} / RGB`;
+                }
             }
             document.getElementById('sizeVal').textContent = `${(data.file_size_mb || 0).toFixed(2)} MB`;
             document.getElementById('faceVal').textContent = data.face_detected ? `${data.face_count} Detected` : `${data.face_count || 1} (Full Image)`;
@@ -1215,10 +1267,78 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
             addLog(`Analysis complete. Prediction: ${data.prediction}`);
         }
 
+        function updateBoundingBoxPosition() {
+            const box = document.getElementById('boxOverlay');
+            if (!currentAnalysisResult) {
+                box.style.display = 'none';
+                return;
+            }
+
+            let bbox = currentAnalysisResult.normalized_bbox;
+            if (!bbox) {
+                // Centered fallback box (45% width/height, 25% top, 27.5% left)
+                bbox = { x: 0.275, y: 0.25, width: 0.45, height: 0.45 };
+            }
+
+            box.style.left = `${bbox.x * 100}%`;
+            box.style.top = `${bbox.y * 100}%`;
+            box.style.width = `${bbox.width * 100}%`;
+            box.style.height = `${bbox.height * 100}%`;
+            box.style.display = 'block';
+        }
+
+        function updateBoxForTimestamp(time) {
+            if (!currentAnalysisResult || !currentAnalysisResult.frame_results) return;
+
+            let closestFrame = null;
+            let minDiff = Infinity;
+
+            for (const frame of currentAnalysisResult.frame_results) {
+                const diff = Math.abs(frame.timestamp - time);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestFrame = frame;
+                }
+            }
+
+            if (closestFrame) {
+                const box = document.getElementById('boxOverlay');
+                const badge = document.getElementById('anomalyBadge');
+                const isManipulatedFrame = closestFrame.prediction === 'SUSPICIOUS';
+
+                if (isManipulatedFrame) {
+                    box.className = 'bounding-box-overlay';
+                    badge.className = 'anomaly-badge';
+                    badge.textContent = 'ANOMALY_DETECTED';
+                } else {
+                    box.className = 'bounding-box-overlay authentic';
+                    badge.className = 'anomaly-badge authentic';
+                    badge.textContent = 'AUTHENTICATED';
+                }
+
+                let bbox = closestFrame.normalized_bbox;
+                if (!bbox) {
+                    box.style.display = 'none';
+                    return;
+                }
+
+                box.style.left = `${bbox.x * 100}%`;
+                box.style.top = `${bbox.y * 100}%`;
+                box.style.width = `${bbox.width * 100}%`;
+                box.style.height = `${bbox.height * 100}%`;
+                box.style.display = 'block';
+            }
+        }
+
         function resetAnalysis() {
             resultsView.classList.add('hidden');
             dropzoneView.classList.remove('hidden');
             selectedFile = null;
+            currentAnalysisResult = null;
+            document.getElementById('boxOverlay').style.display = 'none';
+            document.getElementById('videoPreview').ontimeupdate = null;
+            document.getElementById('videoFramesGrid').style.display = 'none';
+            document.getElementById('mediaWrapper').style.display = 'inline-block';
             btnStartScan.disabled = true;
             btnStartScan.textContent = "FORCE CALIBRATION";
             dropSub.textContent = "Drag and drop media files here, or click to browse.";
@@ -1323,8 +1443,10 @@ class DeepfakeDetectionHandler(BaseHTTPRequestHandler):
                 if not ext:
                     ext = ".tmp"
                 
+                uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+                os.makedirs(uploads_dir, exist_ok=True)
                 temp_filename = f"upload_{int(time.time())}_{os.urandom(4).hex()}{ext}"
-                temp_path = os.path.join("/tmp", temp_filename)
+                temp_path = os.path.join(uploads_dir, temp_filename)
                 
                 with open(temp_path, 'wb') as f:
                     f.write(file_data)

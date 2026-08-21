@@ -142,14 +142,14 @@ def faces_to_normalized_bboxes(faces: List[Tuple[int, int, int, int]], image_sha
     
     for x, y, w, h in faces:
         bbox = {
-            "x": x / width,
-            "y": y / height,
-            "width": w / width,
-            "height": h / height,
-            "x1": x,
-            "y1": y,
-            "x2": x + w,
-            "y2": y + h
+            "x": float(x / width),
+            "y": float(y / height),
+            "width": float(w / width),
+            "height": float(h / height),
+            "x1": int(x),
+            "y1": int(y),
+            "x2": int(x + w),
+            "y2": int(y + h)
         }
         bboxes.append(bbox)
     
